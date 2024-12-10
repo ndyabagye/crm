@@ -3,10 +3,14 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Observers\UserObserver;
 use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -22,12 +26,18 @@ use Illuminate\Notifications\Notifiable;
  * @property null|CarbonInterface $created_at
  * @property null|CarbonInterface $updated_at
  * @property null|CarbonInterface $deleted_at
+ * @property Workspace $workspace
  *
  * @use HasFactory<UserFactory>
  */
-class User extends Authenticatable
+
+#[ObservedBy(UserObserver::class)]
+final class User extends Authenticatable
 {
-    use HasFactory, HasUlids, Notifiable, SoftDeletes;
+    use HasFactory;
+    use HasUlids;
+    use Notifiable;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -38,6 +48,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'remember_token',
+        'workspace_id',
+        'email_verified_at',
     ];
 
     /**
@@ -61,5 +74,14 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /** @return BelongsTo<Workspace> */
+    public function workspace(): BelongsTo
+    {
+        return $this->belongsTo(
+            related: Workspace::class,
+            foreignKey: 'workspace_id'
+        );
     }
 }
