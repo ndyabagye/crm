@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Jobs\Onboarding;
 
+use App\Actions\Workspace\SwitchUserWorkspace;
 use App\Models\Workspace;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\SerializesModels;
 
@@ -25,15 +25,10 @@ final class UpdateUserWorkspace implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(DatabaseManager $database): void
+    public function handle(SwitchUserWorkspace $action): void
     {
-        $database->transaction(
-            callback: fn() => $this->workspace->owner()->update(
-                values: [
-                    'workspace_id' => $this->workspace->id,
-                ],
-            ),
-            attempts: 3,
+        $action->handle(
+            workspace: $this->workspace,
         );
     }
 }
